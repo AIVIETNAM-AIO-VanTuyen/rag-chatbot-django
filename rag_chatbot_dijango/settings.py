@@ -43,7 +43,6 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'accounts',
 ]
 
 MIDDLEWARE = [
@@ -75,7 +74,7 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'rag_chatbot_dijango.wsgi.application'
 
-AUTH_USER_MODEL = 'accounts.CustomUser'
+
 
 
 # Database
