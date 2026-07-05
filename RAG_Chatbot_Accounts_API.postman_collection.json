@@ -1,0 +1,108 @@
+{
+  "info": {
+    "name": "RAG Chatbot - Accounts API",
+    "schema": "https://schema.getpostman.com/json/collection/v2.1.0/collection.json"
+  },
+  "variable": [
+    { "key": "base_url", "value": "http://127.0.0.1:8000" },
+    { "key": "access_token", "value": "" },
+    { "key": "refresh_token", "value": "" }
+  ],
+  "item": [
+    {
+      "name": "1. Đăng ký tài khoản",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/api/accounts/register/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"email\": \"test@gmail.com\",\n  \"password\": \"Test@12345\",\n  \"password_confirm\": \"Test@12345\",\n  \"first_name\": \"Nguyễn\",\n  \"last_name\": \"Văn A\",\n  \"phone_number\": \"0901234567\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json.tokens) {",
+              "  pm.collectionVariables.set('access_token', json.tokens.access);",
+              "  pm.collectionVariables.set('refresh_token', json.tokens.refresh);",
+              "  console.log('✅ Tokens saved!');",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "2. Đăng nhập",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/api/accounts/login/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"username\": \"testuser\",\n  \"password\": \"Test@12345\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json.tokens) {",
+              "  pm.collectionVariables.set('access_token', json.tokens.access);",
+              "  pm.collectionVariables.set('refresh_token', json.tokens.refresh);",
+              "  console.log('✅ Tokens saved!');",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "3. Refresh Token",
+      "request": {
+        "method": "POST",
+        "header": [{ "key": "Content-Type", "value": "application/json" }],
+        "url": "{{base_url}}/api/accounts/token/refresh/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+        }
+      },
+      "event": [
+        {
+          "listen": "test",
+          "script": {
+            "exec": [
+              "var json = pm.response.json();",
+              "if (json.access) {",
+              "  pm.collectionVariables.set('access_token', json.access);",
+              "  console.log('✅ Access token refreshed!');",
+              "}"
+            ]
+          }
+        }
+      ]
+    },
+    {
+      "name": "4. Đăng xuất",
+      "request": {
+        "method": "POST",
+        "header": [
+          { "key": "Content-Type", "value": "application/json" },
+          { "key": "Authorization", "value": "Bearer {{access_token}}" }
+        ],
+        "url": "{{base_url}}/api/accounts/logout/",
+        "body": {
+          "mode": "raw",
+          "raw": "{\n  \"refresh\": \"{{refresh_token}}\"\n}"
+        }
+      }
+    }
+  ]
+}
