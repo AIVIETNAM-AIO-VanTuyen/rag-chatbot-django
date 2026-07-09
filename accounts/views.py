@@ -21,7 +21,7 @@ class LoginView(APIView):
     API Login - Xác thực người dùng và trả về JWT token.
 
     POST /api/accounts/login/
-    Body: { "username": "...", "password": "..." }
+    Body: { "email": "...", "password": "..." }
 
     Response (200):
     {
@@ -36,6 +36,7 @@ class LoginView(APIView):
         serializer = LoginSerializer(data=request.data)
 
         if not serializer.is_valid():
+            print(1111)
             return Response(
                 {
                     'message': 'Đăng nhập thất bại.',

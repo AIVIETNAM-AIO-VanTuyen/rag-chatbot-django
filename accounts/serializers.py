@@ -1,22 +1,28 @@
 from rest_framework import serializers
 from django.contrib.auth.password_validation import validate_password
 from .models import Account
-from django.contrib.auth.models import User
 from django.contrib.auth import authenticate
 
 
 class LoginSerializer(serializers.Serializer):
     """Serializer xử lý dữ liệu đầu vào cho API login."""
-    username = serializers.CharField(required=True)
+    email = serializers.EmailField(required=True)
     password = serializers.CharField(required=True, write_only=True)
 
     def validate(self, data):
-        username = data.get('username')
+        email = data.get('email')
         password = data.get('password')
+
+        # Tìm username tương ứng với email để thực hiện authenticate
+        try:
+            user_obj = Account.objects.get(email=email)
+            username = user_obj.username
+        except Account.DoesNotExist:
+            username = None
 
         user = authenticate(username=username, password=password)
         if not user:
-            raise serializers.ValidationError('Tên đăng nhập hoặc mật khẩu không đúng.')
+            raise serializers.ValidationError('Email hoặc mật khẩu không đúng.')
         if not user.is_active:
             raise serializers.ValidationError('Tài khoản này đã bị vô hiệu hóa.')
 
@@ -26,10 +32,9 @@ class LoginSerializer(serializers.Serializer):
 
 class UserProfileSerializer(serializers.ModelSerializer):
     """Serializer trả về thông tin user sau khi login thành công."""
-    phone_number = serializers.CharField(source='account.phone_number', read_only=True)
 
     class Meta:
-        model = User
+        model = Account
         fields = ['id', 'username', 'email', 'first_name', 'last_name', 'phone_number']
 
 
@@ -40,19 +45,19 @@ class RegisterSerializer(serializers.ModelSerializer):
     phone_number = serializers.CharField(required=False, allow_blank=True, max_length=10)
 
     class Meta:
-        model = User
+        model = Account
         fields = ['username', 'email', 'first_name', 'last_name', 'password', 'password_confirm', 'phone_number']
         extra_kwargs = {
             'email': {'required': True},
         }
 
     def validate_username(self, value):
-        if User.objects.filter(username=value).exists():
+        if Account.objects.filter(username=value).exists():
             raise serializers.ValidationError('Tên đăng nhập đã tồn tại.')
         return value
 
     def validate_email(self, value):
-        if User.objects.filter(email=value).exists():
+        if Account.objects.filter(email=value).exists():
             raise serializers.ValidationError('Email này đã được sử dụng.')
         return value
 
@@ -62,19 +67,17 @@ class RegisterSerializer(serializers.ModelSerializer):
         return data
 
     def create(self, validated_data):
-        # Tách phone_number và password_confirm ra khỏi data trước khi tạo User
-        phone_number = validated_data.pop('phone_number', None)
+        # Tách password_confirm ra khỏi data trước khi tạo Account
         validated_data.pop('password_confirm')
 
-        user = User.objects.create_user(
+        user = Account.objects.create_user(
             username=validated_data['username'],
             email=validated_data['email'],
             password=validated_data['password'],
             first_name=validated_data.get('first_name', ''),
             last_name=validated_data.get('last_name', ''),
+            phone_number=validated_data.get('phone_number', None)
         )
 
-        # Tạo Account profile kèm phone_number
-        Account.objects.create(user=user, phone_number=phone_number)
-
         return user
+

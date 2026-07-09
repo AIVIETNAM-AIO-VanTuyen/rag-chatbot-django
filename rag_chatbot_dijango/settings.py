@@ -79,8 +79,8 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'rag_chatbot_dijango.wsgi.application'
 
-
-
+# Custom User Model
+AUTH_USER_MODEL = 'accounts.Account'
 
 # Database
 # https://docs.djangoproject.com/en/6.0/ref/settings/#databases
